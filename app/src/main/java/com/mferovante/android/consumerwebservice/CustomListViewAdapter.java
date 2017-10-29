@@ -5,6 +5,7 @@ import android.content.Context;
 import android.inputmethodservice.Keyboard;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.android.volley.Response;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 import static com.mferovante.android.consumerwebservice.R.id.id_student;
@@ -24,18 +26,18 @@ import static com.mferovante.android.consumerwebservice.R.id.id_student;
  * Created by marx on 04/10/17.
  */
 
-public class CustomListViewAdapter extends BaseAdapter{
+public class CustomListViewAdapter extends ArrayAdapter<RowItemStudent>{
 
     private Activity activity;
     private LayoutInflater inflater;
     private List<RowItemStudent> rowItemStudentList;
 
     public CustomListViewAdapter(Activity activity, List<RowItemStudent> itemStudents) {
+        super(activity.getApplicationContext(), R.layout.list_item, itemStudents);
 
         this.activity = activity;
         this.rowItemStudentList = itemStudents;
     }
-
 
     @Override
     public int getCount() {
@@ -43,7 +45,7 @@ public class CustomListViewAdapter extends BaseAdapter{
     }
 
     @Override
-    public Object getItem(int i) {
+    public RowItemStudent getItem(int i) {
         return rowItemStudentList.get(i);
     }
 
@@ -72,7 +74,12 @@ public class CustomListViewAdapter extends BaseAdapter{
         else{
             viewItem = (ViewItem) convertView.getTag();
         }
-        viewItem.IdTextView.setText(rowItemStudentList.get(position).getId());
+
+        viewItem.IdTextView.setText(
+                String.valueOf
+                        (rowItemStudentList.get(position).getId())
+        );
+
         viewItem.NameTextView.setText(rowItemStudentList.get(position).getName());
 
         return convertView;

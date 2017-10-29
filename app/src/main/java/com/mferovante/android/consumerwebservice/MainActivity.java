@@ -30,16 +30,24 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String webServiceUrl = "http://192.168.1.6:5000/computing/api/v1.0/students";
+    private final String webServiceUrl = "https://api.opendota.com/api/heroes";
     private ProgressDialog pDialog = null;
     private JSONArray jsonArray = null;
     private ListView listView;
+    private List<RowItemStudent> rowItemStudentList = null;
+    private CustomListViewAdapter customListViewAdapter = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rowItemStudentList = new ArrayList<RowItemStudent>();
 
+        customListViewAdapter = new CustomListViewAdapter(
+                MainActivity.this,
+                rowItemStudentList
+        );
         listView = (ListView) findViewById(R.id.list);
+        listView.setAdapter(customListViewAdapter);
 
         // prepare the loading Dialog
         pDialog = new ProgressDialog(this);
@@ -51,13 +59,16 @@ public class MainActivity extends AppCompatActivity {
             // Show a message to the user to check his Internet
             Toast.makeText(this, "Please check your Internet connection", Toast.LENGTH_LONG).show();
         } else {
-            hidePDialog();
+            pDialog.show();
             // make HTTP request to retrieve the weather
             JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(webServiceUrl,
                     new Response.Listener<JSONArray>() {
                 @Override
                 public void onResponse(JSONArray response) {
-                    new ParseJSonDataClass(MainActivity.this, response).execute();
+                    rowItemStudentList = RowItemStudent.fromJson(response);
+                    customListViewAdapter.clear();
+                    customListViewAdapter.addAll(rowItemStudentList);
+                    hidePDialog();
                 }
             }, new Response.ErrorListener(){
                 @Override
@@ -68,27 +79,10 @@ public class MainActivity extends AppCompatActivity {
                     // hide the progress dialog
                     hidePDialog();
                 }
-            }){
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    HashMap < String, String > headers = new HashMap < String, String > ();
-                    // add headers <key,value>
-
-                    String credentials = "mferovante"+":"+"d06fe49d20cb218e662fd0e034ef8387";
-
-                    String auth = "Basic "
-                            + Base64.encodeToString(credentials.getBytes(),
-                            Base64.NO_WRAP);
-
-                    headers.put("Authorization", auth);
-
-                    return headers;
-                }
-            };
+            });
             // Adding request to request queue
             AppController.getInstance(this).add(jsonArrayRequest);
         }
-
     }
 
     ////////////////////check internet connection
@@ -97,58 +91,13 @@ public class MainActivity extends AppCompatActivity {
         return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
     }
 
-    private void hidePDialog() {
+    protected void hidePDialog() {
         if (pDialog != null) {
             pDialog.dismiss();
             pDialog = null;
         }
     }
-    // Creating method to parse JSON object.
-    private class ParseJSonDataClass extends AsyncTask<Void, Void, Void> {
 
-        public Context context;
-        private List<RowItemStudent> rowItemStudentList = null;
-        private JSONArray response;
-
-        public  ParseJSonDataClass(Context context, JSONArray response){
-            this.context = context;
-            this.response = response;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-        @Override
-        protected Void doInBackground(Void... voids) {
-            rowItemStudentList = new ArrayList<RowItemStudent>();
-            for (int i = 0; i < this.response.length(); i++) {
-                try {
-                    rowItemStudentList.add (
-                            new RowItemStudent(
-                                    i,
-                                    (this.response.getJSONObject(i)).getString("name")
-                            )
-                    );
-                    Log.i("element ", "- "+this.response.getJSONObject(i).getJSONArray("name"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Error , try again ! ", Toast.LENGTH_LONG).show();
-                    hidePDialog();
-                }
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result){
-            CustomListViewAdapter customListViewAdapter = new CustomListViewAdapter(
-                    MainActivity.this,
-                    rowItemStudentList
-            );
-            listView.setAdapter(customListViewAdapter);
-            hidePDialog();
-        }
-    }
 }
 
 

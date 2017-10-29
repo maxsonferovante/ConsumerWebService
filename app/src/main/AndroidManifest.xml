@@ -7,7 +7,6 @@
     <!--Request to check Internet connection state-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <uses-sdk android:minSdkVersion="15" />
 
     <application
         android:allowBackup="true"

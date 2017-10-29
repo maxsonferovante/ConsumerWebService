@@ -24,7 +24,7 @@ public class RowItemStudent {
     }
     public RowItemStudent(JSONObject object){
         try {
-            this.name = object.getString("name").replace("npc_dota_hero_","").replace("_"," ");
+            this.name = object.getString("name");
             this.id = object.getInt("id");
         } catch (JSONException e) {
             e.printStackTrace();

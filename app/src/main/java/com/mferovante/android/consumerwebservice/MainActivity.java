@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String webServiceUrl = "https://api.opendota.com/api/heroes";
+    private final String webServiceUrl = "http://192.168.1.6:5000/computing/api/v1.0/students";
     private ProgressDialog pDialog = null;
     private JSONArray jsonArray = null;
     private ListView listView;
@@ -79,7 +79,20 @@ public class MainActivity extends AppCompatActivity {
                     // hide the progress dialog
                     hidePDialog();
                 }
-            });
+            }){
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap < String, String > headers = new HashMap < String, String > ();
+                    // add headers <key,value>
+                    String credentials = "mferovante"+":"+"d06fe49d20cb218e662fd0e034ef8387";
+                    String auth = "Basic "
+                            + Base64.encodeToString(credentials.getBytes(),
+                            Base64.NO_WRAP);
+                    headers.put("Authorization", auth);
+
+                    return headers;
+                }
+            };
             // Adding request to request queue
             AppController.getInstance(this).add(jsonArrayRequest);
         }

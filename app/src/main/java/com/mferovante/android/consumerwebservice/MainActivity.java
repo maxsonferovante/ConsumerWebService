@@ -2,12 +2,14 @@ package com.mferovante.android.consumerwebservice;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -17,10 +19,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 
 
 import java.util.ArrayList;
@@ -30,16 +30,18 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String webServiceUrl = "http://192.168.1.6:5000/computing/api/v1.0/students";
+    private final String webServiceUrl = "http://172.16.2.235:5000/computing/api/v1.0/students";
     private ProgressDialog pDialog = null;
     private JSONArray jsonArray = null;
     private ListView listView;
     private List<RowItemStudent> rowItemStudentList = null;
     private CustomListViewAdapter customListViewAdapter = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         rowItemStudentList = new ArrayList<RowItemStudent>();
 
         customListViewAdapter = new CustomListViewAdapter(
@@ -53,7 +55,13 @@ public class MainActivity extends AppCompatActivity {
         pDialog = new ProgressDialog(this);
         pDialog.setMessage("Please wait...");
         pDialog.setCancelable(false);
-
+    }
+    @Override
+    protected void onResume() {
+        connectServe();
+        super.onResume();
+    }
+    private void connectServe() {
         // Check if Internet is working
         if (!isNetworkAvailable(this)) {
             // Show a message to the user to check his Internet
@@ -63,14 +71,14 @@ public class MainActivity extends AppCompatActivity {
             // make HTTP request to retrieve the weather
             JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(webServiceUrl,
                     new Response.Listener<JSONArray>() {
-                @Override
-                public void onResponse(JSONArray response) {
-                    rowItemStudentList = RowItemStudent.fromJson(response);
-                    customListViewAdapter.clear();
-                    customListViewAdapter.addAll(rowItemStudentList);
-                    hidePDialog();
-                }
-            }, new Response.ErrorListener(){
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            rowItemStudentList = RowItemStudent.fromJson(response);
+                            customListViewAdapter.clear();
+                            customListViewAdapter.addAll(rowItemStudentList);
+                            hidePDialog();
+                        }
+                    }, new Response.ErrorListener(){
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     VolleyLog.d("tag", "Error: " + error.getMessage());
@@ -82,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             }){
                 @Override
                 public Map<String, String> getHeaders() throws AuthFailureError {
-                    HashMap < String, String > headers = new HashMap < String, String > ();
+                    HashMap< String, String > headers = new HashMap < String, String > ();
                     // add headers <key,value>
                     String credentials = "mferovante"+":"+"d06fe49d20cb218e662fd0e034ef8387";
                     String auth = "Basic "
@@ -97,13 +105,31 @@ public class MainActivity extends AppCompatActivity {
             AppController.getInstance(this).add(jsonArrayRequest);
         }
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        switch (item.getItemId()){
+            case R.id.action_insert:{
+                startActivity(new Intent(MainActivity.this, AddStudentActivity.class));
+                return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
 
+    }
     ////////////////////check internet connection
     public boolean isNetworkAvailable(final Context context) {
         final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
         return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
     }
-
     protected void hidePDialog() {
         if (pDialog != null) {
             pDialog.dismiss();

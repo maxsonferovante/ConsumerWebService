@@ -1,5 +1,6 @@
 package com.mferovante.android.consumerwebservice;
 
+import android.inputmethodservice.Keyboard;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -15,6 +16,9 @@ import java.util.List;
 
 public class RowItemStudent {
 
+    public RowItemStudent(){
+
+    }
     public RowItemStudent(int id, String name) {
         this.id = id;
         this.name = name;
@@ -29,6 +33,15 @@ public class RowItemStudent {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+    public JSONObject convertToJson(){
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("name", this.name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
     }
     public static ArrayList<RowItemStudent> fromJson(JSONArray jsonObjects) {
         ArrayList<RowItemStudent> users = new ArrayList<RowItemStudent>();
